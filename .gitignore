@@ -396,3 +396,15 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+node_modules/
+/test-results/
+
+__blobstorage__
+__queuestorage__
+__azurite_db*__.json
+.python_packages
+
+chat-functions-app/local.settings.json
+.venv/
+.vscode/

@@ -1,0 +1,152 @@
+body {
+    display: flex;
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    flex-direction: column;
+    background-color: lightgray;
+
+}
+
+nav {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #333;
+    padding: 10px;
+    text-align: left;
+    flex-direction: row;
+}
+
+nav h2 {
+    color: white;
+    text-decoration: solid;
+    margin: 0 10px;
+}
+
+#clear-button {
+    background-color: #ff4d4d;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+header {
+    text-align: center;
+    margin: 20px 0;
+}
+
+#comet-logo {
+    width: 100px;
+    height: auto;
+}
+
+h1 {
+    font-size: 24px;
+    color: #333;
+}
+
+p {
+    font-size: 18px;
+    color: #666;
+}
+
+#input-container {
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    flex-direction: row;
+}
+
+#user-input {
+    padding: 10px;
+    font-size: 16px;
+    width: 70%;
+    height: 70px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+#send-button {
+    margin: 5px;
+    padding: 10px 20px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-left: none;
+    color: black;
+    cursor: pointer;
+    border-radius: 100px;
+}
+
+#chat-history {
+    display: flex;
+    flex-direction: column;
+    width: 99%;
+    height: 95%;
+    overflow-y: scroll;
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+#chat-container {
+    display: flex;
+    background-color: #f9f9f9;
+    width: 98%;
+    height: 87vh;
+    flex-direction: column;
+    justify-content: center;
+    /* margin: 0 auto; */
+    /* border: 1px solid black; */
+    padding: 10px;
+    /* border-radius: 5px; */
+}
+
+.message-user-message{
+    background-color: #cccccc;
+    color: black;
+    padding: 10px;
+    align-self: flex-start;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    margin-top: 10px;
+}
+
+.message-bot-response{
+    background-color: #99ccff;
+    color: black;
+    padding: 10px;
+    align-self: flex-end;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+.typing-bot-response{
+    color: black;
+    padding: 10px;
+    align-self: flex-end;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    width: 60px;
+    height: 50px;
+}
+
+h3 {
+    color: #1a1a1a;
+}
+ol {
+    padding-left: 20px;
+}
+li {
+    margin-bottom: 10px;
+}
+strong {
+    font-size: 1.1em;
+    color: #333;
+}
+p {
+    margin-top: 5px;
+    color: black;
+}
