@@ -405,6 +405,16 @@ __queuestorage__
 __azurite_db*__.json
 .python_packages
 
+# Node.js dependencies
+static-web-app/node_modules/
+
+# Python virtual environments
+chat-functions-app/.venv/
+ingestion-functions-app/.venv/
+
+# Local Azure Functions settings
 chat-functions-app/local.settings.json
-.venv/
+ingestion-functions-app/local.settings.json
+
+# VS Code settings
 .vscode/

@@ -1,14 +1,43 @@
 # Project
 
-> This repo has been populated by an initial template to help get you started. Please
-> make sure to update the content to build a great experience for community-building.
+This is a GenAI news aggregator and summarizer app to answer any queries related to latest news in natural language. This is a serverless GenAI application built using Azure Functions, Azure Cosmos DB and Azure OpenAI.
 
-As the maintainer of this project, please make a few updates:
+Prerequisites to run locally:
+1. Visual Studio Code
+2. Install necessary dependencies to [Run Azure Functions locally in Vscode](https://learn.microsoft.com/en-us/azure/azure-functions/functions-develop-vs-code?tabs=node-v4%2Cpython-v2%2Cisolated-process%2Cquick-create&pivots=programming-language-python) 
+3. Install necessary dependencies to [Run Azure Static web apps locally in Vscode](https://learn.microsoft.com/en-us/azure/static-web-apps/local-development)
 
-- Improving this README.MD file to provide a great experience
-- Updating SUPPORT.MD with content about this project's support experience
-- Understanding the security reporting process in SECURITY.MD
-- Remove this section from the README
+This repository has 3 main components:
+
+### 1. Static-web-app
+
+This is the Azure static web app to host the frontend chat interface of the application. This is written in JS & HTML and uses static web app for Azure deployment. 
+Steps to run locally:
+```bash
+cd {workspace-folder}/static-web-app
+swa start .
+```
+The web interface can be accessed using http://localhost:4280.
+
+### 2. Chat-functions-app
+
+This is an HTTP trigger Azure Functions app. Any request made from the static web-app is routed to this functions app, which in turn calls Azure OpenAI's chat completion API to generate natural language response. 
+
+Steps to run locally:
+```bash
+cd {workspace-folder}/chat-functions-app
+func start
+```
+
+### 3. Ingestion-functions-app
+
+This is a timer trigger Azure Functions app. This app periodically aggregates data from Google News API and process the RSS feed to filter news article and metadata associated with it to store in Azure Cosmos DB along with its vector embeddings.
+
+Steps to run locally:
+```bash
+cd {workspace-folder}/ingestion-functions-app
+func start
+```
 
 ## Contributing
 
