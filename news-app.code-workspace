@@ -1,0 +1,31 @@
+{
+	"folders": [
+		{
+			"name": "Chat functions app",
+			"path": "./chat-functions-app"
+		},
+		{
+			"name": "Ingestion functions app",
+			"path": "./ingestion-functions-app"
+		},
+		{
+			"name": "News web app",
+			"path": "./static-web-app"
+		}
+	],
+	"settings": {
+		"debug.internalConsoleOptions": "neverOpen"
+	},
+	"launch": {
+        "configurations": [],
+        "compounds": [
+            {
+                "name": "Attach to both apps",
+                "configurations": [
+                    "Attach to chat-functions-app",
+                    "Attach to ingestion-functions-app"
+                ]
+            }
+        ]
+    }
+}
