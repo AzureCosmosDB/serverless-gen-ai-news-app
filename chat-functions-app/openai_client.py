@@ -1,5 +1,4 @@
 from openai import AzureOpenAI
-from cosmos_client import CosmosDBClient
 import yaml
 import os
 import uuid
@@ -18,9 +17,9 @@ class OpenAIClient:
         openai_embeddings_dimensions = int(config['openai_embeddings_dimensions'])
         openai_completions_deployment = config['openai_completions_deployment']
 
-    def __init__(self):
+    def __init__(self, cosmos_client):
         self.openai_client = AzureOpenAI(azure_endpoint=self.openai_endpoint, api_key=self.openai_key, api_version=self.openai_api_version)
-        self.cosmos_client = CosmosDBClient()
+        self.cosmos_client = cosmos_client
         
     # generate openai embeddings
     def generate_embeddings(self, text):    

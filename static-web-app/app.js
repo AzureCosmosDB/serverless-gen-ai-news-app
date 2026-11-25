@@ -1,21 +1,24 @@
-const newsEndpoint = "https://news-chat-app.azurewebsites.net/api/query";
+const hostname = window.location.hostname;
+const newsEndpoint = window.NEWS_API_ENDPOINT ||
+    (hostname === "localhost" || hostname === "127.0.0.1"
+        ? `http://${hostname}:7071/api/query`
+        : "https://news-chat-app.azurewebsites.net/api/query");
 
 document.addEventListener("DOMContentLoaded", function () {
     const chatHistory = [];
     const chatHistoryContainer = document.getElementById('chat-history');
     const userInput = document.getElementById('user-input');
     const sendButton = document.getElementById('send-button');
-    const clearButton = document.getElementById('clear-button');
     const typing = document.createElement('img');
     typing.className = 'typing-bot-response';
     typing.src = "images/typing.gif"
     
     async function fetchChatResponse(userMessage) {
+        sendButton.disabled = true;
         updateChatHistoryDisplay(userMessage, chatHistoryContainer, userInput, true, typing);
 
         // Prepare the request payload
-        requestData = { "message": userMessage, "chatHistory": chatHistory };
-        console.log("Request Data:", JSON.stringify(requestData));
+        const requestData = { "message": userMessage, "chatHistory": chatHistory };
         try {
             // Send the request to the server endpoint
             const response = await fetch(newsEndpoint, {
@@ -25,24 +28,37 @@ document.addEventListener("DOMContentLoaded", function () {
                 },
                 body: JSON.stringify(requestData)
             });
+            if (!response.ok) {
+                throw new Error(`Chat request failed with HTTP ${response.status}`);
+            }
             const responsePayload = await response.json();
-            console.log("Response Data:", responsePayload);
-            // Check if the response is cached
-            const cached = responsePayload.cached;
+            if (typeof responsePayload.response !== "string" || !responsePayload.response.trim()) {
+                throw new Error("Chat API returned an invalid response");
+            }
 
             // Append user message and response to chat history
             chatHistory.push([userMessage, responsePayload.response]);
             updateChatHistoryDisplay(responsePayload.response, chatHistoryContainer, userInput, false, typing);
         } catch (error) {
             console.error("Error:", error);
+            const errorElement = document.createElement('div');
+            errorElement.className = 'message-bot-response';
+            errorElement.textContent = "Unable to get the news response. Please try again.";
+            chatHistoryContainer.appendChild(errorElement);
+        } finally {
+            userInput.removeAttribute("disabled");
+            sendButton.disabled = false;
+            if (typing.parentNode === chatHistoryContainer) {
+                chatHistoryContainer.removeChild(typing);
+            }
+            userInput.focus();
+            chatHistoryContainer.scrollTop = chatHistoryContainer.scrollHeight;
         }
-
-        // Clear the input box after sending the message
-        document.getElementById("user-input").value = "";
 
     }
     sendButton.addEventListener('click', async () => {
-        const userMessage = userInput.value;
+        if (sendButton.disabled) return;
+        const userMessage = userInput.value.trim();
         if (!userMessage) return;
         userInput.value = '';
         await fetchChatResponse(userMessage);
@@ -84,9 +100,6 @@ function updateChatHistoryDisplay(message, chatHistoryContainer, userInput, user
         chatHistoryContainer.appendChild(typing);
         userInput.setAttribute("disabled", true);
     }else{
-        userInput.removeAttribute("disabled");
-        chatHistoryContainer.removeChild(typing);
-        userInput.focus();
     }
     chatHistoryContainer.scrollTop = chatHistoryContainer.scrollHeight;
 }

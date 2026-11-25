@@ -6,6 +6,6 @@ azure-functions
 openai
 requests
 newspaper3k
-requests
+six
 pyyaml
 lxml_html_clean
