@@ -14,8 +14,13 @@ class CosmosDBClient:
         CACHE_CONTAINER_NAME = config['cache_container_name']
         OPEN_AI_EMBEDDING_DIMENSION = config['openai_embeddings_dimensions']
 
-    def __init__(self):
+    def __init__(self, create_resources=False):
         self.client = CosmosClient(self.COSMOS_DB_ENDPOINT, self.COSMOS_DB_KEY)
+        if not create_resources:
+            self.db = self.client.get_database_client(self.DATABASE_NAME)
+            self.container = self.db.get_container_client(self.CONTAINER_NAME)
+            self.cache_container = self.db.get_container_client(self.CACHE_CONTAINER_NAME)
+            return
         self.db = self.client.create_database_if_not_exists(self.DATABASE_NAME)
         
         # Create the vector embedding policy to specify vector details
@@ -39,9 +44,11 @@ class CosmosDBClient:
             ], 
             "excludedPaths": [ 
             { 
-                "path": "/\"_etag\"/?",
-                "path": "/vector/*",
-            } 
+                "path": "/\"_etag\"/?"
+            },
+            {
+                "path": "/vector/*"
+            }
             ], 
             "vectorIndexes": [ 
                 {
@@ -51,7 +58,7 @@ class CosmosDBClient:
             ]
         } 
 
-        # Create the data collection with vector index (note: this creates a container with 10000 RUs to allow fast data load)
+        # Resource creation is an explicit setup step, not part of request handling.
         try:
             self.container = self.db.create_container_if_not_exists(id=self.CONTAINER_NAME, 
                                                         partition_key=PartitionKey(path='/category'), 

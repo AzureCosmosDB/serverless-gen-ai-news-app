@@ -5,87 +5,82 @@ import news_processing
 import requests
 from openai_client import OpenAIClient
 import hashlib
+import os
 
 app = func.FunctionApp()
 
 @app.function_name(name="news-ingestion-app")
-@app.timer_trigger(schedule="0 */15 * * * *", 
-              arg_name="mytimer",
-              run_on_startup=True) 
-@app.cosmos_db_output(arg_name="documents", 
-                      database_name="News",
-                      container_name="NewsArticles",
-                      create_if_not_exists=True,
-                      connection="cosmoddbconnection")
+@app.timer_trigger(schedule="0 */15 * * * *",
+                   arg_name="mytimer",
+                   run_on_startup=False)
+@app.cosmos_db_output(arg_name="documents",
+                     database_name="News",
+                     container_name="NewsArticles",
+                     create_if_not_exists=False,
+                     connection="cosmoddbconnection")
 async def main(mytimer: func.TimerRequest, documents: func.Out[func.Document]):
-    utc_timestamp = datetime.datetime.utcnow().replace(
-        tzinfo=datetime.timezone.utc).isoformat()
-    
+    utc_timestamp = datetime.datetime.now(datetime.timezone.utc).isoformat()
     if mytimer.past_due:
-        logging.info('The timer is past due!')
-    logging.info('Python timer trigger function ran at %s', utc_timestamp)
+        logging.info("The timer is past due!")
+    logging.info("Python timer trigger function ran at %s", utc_timestamp)
 
     try:
         articles = await fetch_news_articles()
-        # Convert each article to a Document and append to the output
-        docs_to_store = [func.Document.from_dict(article) for article in articles]
-        # Store all documents at once
-        documents.set(docs_to_store)
-        logging.info(f"Stored articles: {len(docs_to_store)}")
-    except Exception as e:
-        logging.error('Error:')
-        logging.error(e)
+        documents.set([func.Document.from_dict(article) for article in articles])
+        logging.info("Stored articles: %s", len(articles))
+    except Exception:
+        logging.exception("News ingestion failed")
+        raise
+
 
 openai_client = OpenAIClient()
-# Init
-api_key='fb8fa1da87d1482081783da21aa77cf8'
 
-def fetch_news_articles():
-    url = 'https://newsapi.org/v2/top-headlines?country=in&apiKey='+api_key
-    articles = []
-    response = requests.get(url)
-    if response.status_code == 200:
-        news_data = response.json()
-        articles = news_data.get("articles", [])
-        print(f"Total articles: {len(articles)}" + "\n")
-    else:
-        print(f"Error fetching articles: {response.text}" + "\n")
-    return process_news_articles(articles)
+
+async def fetch_news_articles():
+    response = requests.get(
+        "https://newsapi.org/v2/top-headlines",
+        params={"country": "in"},
+        headers={"X-Api-Key": os.environ["news_api_key"]},
+        timeout=30,
+    )
+    response.raise_for_status()
+    articles = response.json().get("articles", [])
+    logging.info("Fetched articles: %s", len(articles))
+    return await process_news_articles(articles)
+
 
 async def process_article(raw_article):
     try:
         article, final_url = await news_processing.process_urls(raw_article.get("url"))
         if article is not None:
-            # Infer the category of the article
             category = news_processing.infer_category_with_openai(article.title, article.text)
-            logging.info(f"Category: {category}")
             combined_text = f"title: {article.title} content: {article.text}"
             vector = openai_client.generate_embeddings(combined_text)
             if vector is None:
                 return None
-            hash_object = hashlib.sha256(article.title.encode())
-            id = hash_object.hexdigest()
+            article_id = hashlib.sha256(article.title.encode()).hexdigest()
             processed_article = {
-                "id": id,
+                "id": article_id,
                 "source": {
                     "name": raw_article.get("source", {}).get("name"),
-                    "url": raw_article.get("url")
+                    "url": raw_article.get("url"),
                 },
                 "title": article.title,
                 "author": raw_article.get("author"),
                 "publishedDate": str(raw_article.get("publishedAt")),
                 "content": article.text,
-                "summary": "",  # Summarization to be handled separately
+                "summary": "",
                 "url": final_url,
-                "vector": vector,  
-                "tags": list(article.tags) ,  
-                "category": category 
+                "vector": vector,
+                "tags": list(article.tags),
+                "category": category,
             }
-            logging.info(f"Processed article: {processed_article['title']}")
+            logging.info("Processed article: %s", processed_article["title"])
             return processed_article
-    except Exception as e:
-        print(f"Error processing article {raw_article.get('url')}: {e}")
+    except Exception:
+        logging.exception("Error processing article %s", raw_article.get("url"))
     return None
+
 
 async def process_news_articles(articles):
     processed_articles = []
@@ -93,6 +88,4 @@ async def process_news_articles(articles):
         processed_article = await process_article(raw_article)
         if processed_article is not None:
             processed_articles.append(processed_article)
-    # # Close the browser and return the processed articles
     return processed_articles
-

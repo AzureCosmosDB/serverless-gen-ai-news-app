@@ -11,7 +11,7 @@ class OpenAIClient:
     with open(config_file_path, "r") as file:
         config = yaml.safe_load(file)
         openai_endpoint = config['openai_endpoint']
-        openai_key = config['openai_key']
+        openai_key = os.environ['openai_key']
         openai_api_version = config['openai_api_version']
         openai_embeddings_deployment = config['openai_embeddings_deployment']
         openai_embeddings_dimensions = int(config['openai_embeddings_dimensions'])
